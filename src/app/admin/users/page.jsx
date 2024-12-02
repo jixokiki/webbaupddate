@@ -1265,6 +1265,8 @@ const Payment = () => {
                   <p className="text-gray-600">Cuti Lahiran: {item.amountLahiran}</p>
                   <p className="text-gray-600">Account: {item.accountNumber}</p>
                   <p className="text-gray-600">Salary: {item.salary}</p>
+                                       <td className="py-2 px-4 border-b">{item.startDate}</td>
+                   <td className="py-2 px-4 border-b">{item.endDate}</td>
                   <p className="text-gray-600">Status: {item.diterimaAcc || "Pending"}</p>
                   <p className="text-gray-600">
                     Submitted:{" "}
