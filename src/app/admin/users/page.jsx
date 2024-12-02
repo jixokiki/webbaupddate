@@ -886,6 +886,219 @@
 
 
 //tgl 14 oktober 2024
+// "use client";
+
+// import React, { useState, useEffect } from "react";
+// import NavbarAdmin from "@/components/NavbarAdmin";
+// import {
+//   collection,
+//   getDocs,
+//   query,
+//   orderBy,
+//   updateDoc,
+//   getDoc,
+//   doc,
+// } from "firebase/firestore";
+// import { db } from "@/firebase/firebase";
+// import Navbar from "@/components/Navbar";
+
+// const Payment = () => {
+//   const [data, setData] = useState([]);
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [selectedIds, setSelectedIds] = useState([]);
+
+//   useEffect(() => {
+//     const fetchAllData = async () => {
+//       try {
+//         setIsLoading(true);
+
+//         // Fetch all user documents from Firestore
+//         const usersCollection = collection(db, "userPengajuanCuti");
+//         const q = query(usersCollection, orderBy("timeStamp", "desc"));
+//         const querySnapshot = await getDocs(q);
+
+//         const allData = querySnapshot.docs.map((doc) => ({
+//           id: doc.id,
+//           ...doc.data(),
+//         }));
+//         setData(allData);
+//       } catch (error) {
+//         console.error("Error fetching data:", error);
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+
+//     fetchAllData();
+//   }, []);
+
+//   const handleCheckboxChange = (id) => {
+//     setSelectedIds((prevSelectedIds) =>
+//       prevSelectedIds.includes(id)
+//         ? prevSelectedIds.filter((item) => item !== id)
+//         : [...prevSelectedIds, id]
+//     );
+//   };
+
+//   const handleApproveSelected = async () => {
+//     try {
+//       const emailToSalaryMap = {};
+
+//       // Collect data and compute salary for each user
+//       for (const id of selectedIds) {
+//         const docRef = doc(db, "userPengajuanCuti", id);
+//         const docSnap = await getDoc(docRef);
+//         const docData = docSnap.data();
+//         const userEmail = docData.email;
+//         const currentAmount = docData.amount;
+//         const currentSalary = docData.salary || 40000;
+
+//         // Initialize map for the user email if not present
+//         if (!emailToSalaryMap[userEmail]) {
+//           emailToSalaryMap[userEmail] = 0;
+//         }
+
+//         // Accumulate salary based on the leave request amount
+//         if (currentAmount > 0) {
+//           emailToSalaryMap[userEmail] += currentAmount * currentSalary;
+//         }
+
+//         // Update document status to "Approve"
+//         await updateDoc(docRef, {
+//           diterimaAcc: "Approve",
+//           salary: emailToSalaryMap[userEmail],
+//         });
+//       }
+
+//       // Update state with the new data
+//       setData((prevData) =>
+//         prevData.map((item) => {
+//           if (selectedIds.includes(item.id)) {
+//             const updatedSalary = emailToSalaryMap[item.email] || item.salary;
+//             return {
+//               ...item,
+//               diterimaAcc: "Approve",
+//               salary: updatedSalary,
+//             };
+//           }
+//           return item;
+//         })
+//       );
+
+//       // Clear selected IDs after updating
+//       setSelectedIds([]);
+//     } catch (error) {
+//       console.error("Error updating documents:", error);
+//     }
+//   };
+
+//   const handleDeclineSelected = async () => {
+//     try {
+//       for (const id of selectedIds) {
+//         const docRef = doc(db, "userPengajuanCuti", id);
+//         await updateDoc(docRef, {
+//           diterimaAcc: "Decline",
+//         });
+//       }
+
+//       // Update state with declined status
+//       setData((prevData) =>
+//         prevData.map((item) =>
+//           selectedIds.includes(item.id)
+//             ? { ...item, diterimaAcc: "Decline" }
+//             : item
+//         )
+//       );
+
+//       // Clear selected IDs after updating
+//       setSelectedIds([]);
+//     } catch (error) {
+//       console.error("Error updating documents:", error);
+//     }
+//   };
+
+//   return (
+//     <div className="bg-sky-200 min-h-screen flex flex-col">
+//       <NavbarAdmin />
+//       <div className="max-w-9xl mx-auto p-6 bg-sky-300 border rounded-md shadow-md mt-36">
+//         <h2 className="text-2xl font-semibold mb-6">Payment Page</h2>
+//         {isLoading ? (
+//           <p>Loading...</p>
+//         ) : (
+//           <>
+//             <div className="mb-4 flex space-x-2">
+//               <button
+//                 className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+//                 onClick={handleApproveSelected}
+//                 disabled={selectedIds.length === 0}
+//               >
+//                 Approve Selected
+//               </button>
+//               <button
+//                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+//                 onClick={handleDeclineSelected}
+//                 disabled={selectedIds.length === 0}
+//               >
+//                 Decline Selected
+//               </button>
+//             </div>
+//             <table className="min-w-full bg-white border">
+//               <thead>
+//                 <tr>
+//                   <th className="py-2 px-4 border-b">Select</th>
+//                   <th className="py-2 px-4 border-b">Username</th>
+//                   <th className="py-2 px-4 border-b">Fullname</th>
+//                   <th className="py-2 px-4 border-b">Email</th>
+//                   <th className="py-2 px-4 border-b">Bank</th>
+//                   <th className="py-2 px-4 border-b">Total Cuti</th>
+//                   <th className="py-2 px-4 border-b">Account Number</th>
+//                   <th className="py-2 px-4 border-b">Tanggal Hari ini</th>
+//                   <th className="py-2 px-4 border-b">Tanggal Pengajuan Cuti</th>
+//                   <th className="py-2 px-4 border-b">Tanggal Akhir Cuti</th>
+//                   <th className="py-2 px-4 border-b">Amount</th>
+//                   <th className="py-2 px-4 border-b">Salary</th>
+//                   <th className="py-2 px-4 border-b">Reason</th>
+//                   <th className="py-2 px-4 border-b">Status</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {data.map((item, index) => (
+//                   <tr key={index}>
+//                     <td className="py-2 px-4 border-b">
+//                       <input
+//                         type="checkbox"
+//                         checked={selectedIds.includes(item.id)}
+//                         onChange={() => handleCheckboxChange(item.id)}
+//                       />
+//                     </td>
+//                     <td className="py-2 px-4 border-b">{item.username}</td>
+//                     <td className="py-2 px-4 border-b">{item.fullname}</td>
+//                     <td className="py-2 px-4 border-b">{item.email}</td>
+//                     <td className="py-2 px-4 border-b">{item.bank}</td>
+//                     <td className="py-2 px-4 border-b">{item.totalCuti}</td>
+//                     <td className="py-2 px-4 border-b">{item.accountNumber}</td>
+//                     <td className="py-2 px-4 border-b">{item.timeStamp ? new Date(item.timeStamp.seconds * 1000).toLocaleDateString() : ""}</td>
+//                     <td className="py-2 px-4 border-b">{item.startDate}</td>
+//                     <td className="py-2 px-4 border-b">{item.endDate}</td>
+//                     <td className="py-2 px-4 border-b">{item.amount}</td>
+//                     <td className="py-2 px-4 border-b">{item.salary}</td>
+//                     <td className="py-2 px-4 border-b">{item.reason}</td>
+//                     <td className="py-2 px-4 border-b">{item.diterimaAcc || "Pending"}</td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Payment;
+
+
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -900,7 +1113,6 @@ import {
   doc,
 } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
-import Navbar from "@/components/Navbar";
 
 const Payment = () => {
   const [data, setData] = useState([]);
@@ -911,12 +1123,9 @@ const Payment = () => {
     const fetchAllData = async () => {
       try {
         setIsLoading(true);
-
-        // Fetch all user documents from Firestore
         const usersCollection = collection(db, "userPengajuanCuti");
         const q = query(usersCollection, orderBy("timeStamp", "desc"));
         const querySnapshot = await getDocs(q);
-
         const allData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -943,8 +1152,6 @@ const Payment = () => {
   const handleApproveSelected = async () => {
     try {
       const emailToSalaryMap = {};
-
-      // Collect data and compute salary for each user
       for (const id of selectedIds) {
         const docRef = doc(db, "userPengajuanCuti", id);
         const docSnap = await getDoc(docRef);
@@ -953,24 +1160,20 @@ const Payment = () => {
         const currentAmount = docData.amount;
         const currentSalary = docData.salary || 40000;
 
-        // Initialize map for the user email if not present
         if (!emailToSalaryMap[userEmail]) {
           emailToSalaryMap[userEmail] = 0;
         }
 
-        // Accumulate salary based on the leave request amount
         if (currentAmount > 0) {
           emailToSalaryMap[userEmail] += currentAmount * currentSalary;
         }
 
-        // Update document status to "Approve"
         await updateDoc(docRef, {
           diterimaAcc: "Approve",
           salary: emailToSalaryMap[userEmail],
         });
       }
 
-      // Update state with the new data
       setData((prevData) =>
         prevData.map((item) => {
           if (selectedIds.includes(item.id)) {
@@ -985,7 +1188,6 @@ const Payment = () => {
         })
       );
 
-      // Clear selected IDs after updating
       setSelectedIds([]);
     } catch (error) {
       console.error("Error updating documents:", error);
@@ -1001,7 +1203,6 @@ const Payment = () => {
         });
       }
 
-      // Update state with declined status
       setData((prevData) =>
         prevData.map((item) =>
           selectedIds.includes(item.id)
@@ -1010,7 +1211,6 @@ const Payment = () => {
         )
       );
 
-      // Clear selected IDs after updating
       setSelectedIds([]);
     } catch (error) {
       console.error("Error updating documents:", error);
@@ -1020,7 +1220,7 @@ const Payment = () => {
   return (
     <div className="bg-sky-200 min-h-screen flex flex-col">
       <NavbarAdmin />
-      <div className="max-w-9xl mx-auto p-6 bg-sky-300 border rounded-md shadow-md mt-36">
+      <div className="max-w-7xl mx-auto p-6 bg-sky-300 border rounded-md shadow-md mt-36">
         <h2 className="text-2xl font-semibold mb-6">Payment Page</h2>
         {isLoading ? (
           <p>Loading...</p>
@@ -1042,52 +1242,39 @@ const Payment = () => {
                 Decline Selected
               </button>
             </div>
-            <table className="min-w-full bg-white border">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b">Select</th>
-                  <th className="py-2 px-4 border-b">Username</th>
-                  <th className="py-2 px-4 border-b">Fullname</th>
-                  <th className="py-2 px-4 border-b">Email</th>
-                  <th className="py-2 px-4 border-b">Bank</th>
-                  <th className="py-2 px-4 border-b">Total Cuti</th>
-                  <th className="py-2 px-4 border-b">Account Number</th>
-                  <th className="py-2 px-4 border-b">Tanggal Hari ini</th>
-                  <th className="py-2 px-4 border-b">Tanggal Pengajuan Cuti</th>
-                  <th className="py-2 px-4 border-b">Tanggal Akhir Cuti</th>
-                  <th className="py-2 px-4 border-b">Amount</th>
-                  <th className="py-2 px-4 border-b">Salary</th>
-                  <th className="py-2 px-4 border-b">Reason</th>
-                  <th className="py-2 px-4 border-b">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item, index) => (
-                  <tr key={index}>
-                    <td className="py-2 px-4 border-b">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(item.id)}
-                        onChange={() => handleCheckboxChange(item.id)}
-                      />
-                    </td>
-                    <td className="py-2 px-4 border-b">{item.username}</td>
-                    <td className="py-2 px-4 border-b">{item.fullname}</td>
-                    <td className="py-2 px-4 border-b">{item.email}</td>
-                    <td className="py-2 px-4 border-b">{item.bank}</td>
-                    <td className="py-2 px-4 border-b">{item.totalCuti}</td>
-                    <td className="py-2 px-4 border-b">{item.accountNumber}</td>
-                    <td className="py-2 px-4 border-b">{item.timeStamp ? new Date(item.timeStamp.seconds * 1000).toLocaleDateString() : ""}</td>
-                    <td className="py-2 px-4 border-b">{item.startDate}</td>
-                    <td className="py-2 px-4 border-b">{item.endDate}</td>
-                    <td className="py-2 px-4 border-b">{item.amount}</td>
-                    <td className="py-2 px-4 border-b">{item.salary}</td>
-                    <td className="py-2 px-4 border-b">{item.reason}</td>
-                    <td className="py-2 px-4 border-b">{item.diterimaAcc || "Pending"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {data.map((item) => (
+                <div
+                  key={item.id}
+                  className={`bg-white shadow-md rounded-lg p-4 border ${
+                    selectedIds.includes(item.id) ? "border-green-500" : "border-gray-200"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={() => handleCheckboxChange(item.id)}
+                    className="mb-2"
+                  />
+                  <h3 className="text-lg font-bold">{item.username}</h3>
+                  <p className="text-gray-600">Fullname: {item.fullname}</p>
+                  <p className="text-gray-600">Email: {item.email}</p>
+                  <p className="text-gray-600">Bank: {item.bank}</p>
+                  <p className="text-gray-600">Total Cuti: {item.totalCuti}</p>
+                  <p className="text-gray-600">Cuti Hamil: {item.amountHamil}</p>
+                  <p className="text-gray-600">Cuti Lahiran: {item.amountLahiran}</p>
+                  <p className="text-gray-600">Account: {item.accountNumber}</p>
+                  <p className="text-gray-600">Salary: {item.salary}</p>
+                  <p className="text-gray-600">Status: {item.diterimaAcc || "Pending"}</p>
+                  <p className="text-gray-600">
+                    Submitted:{" "}
+                    {item.timeStamp
+                      ? new Date(item.timeStamp.seconds * 1000).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                </div>
+              ))}
+            </div>
           </>
         )}
       </div>
